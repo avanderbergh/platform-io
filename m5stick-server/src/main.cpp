@@ -2,6 +2,7 @@
 #include <ESPAsyncWebServer.h>
 #include <M5StickC.h>
 #include <WiFi.h>
+#include <LittleFS.h>
 
 #include "DHT12.h"
 
@@ -45,6 +46,13 @@ void setup()
 
   M5.Lcd.print(WiFi.localIP());
 
+  if (!LittleFS.begin())
+  {
+    Serial.println("An error occurred during LittleFS initialization");
+    M5.Lcd.println("LittleFS error");
+    return;
+  }
+
   server.on("/tmp", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               float tmp = dht12.readTemperature();
@@ -54,6 +62,8 @@ void setup()
             {
               float hum = dht12.readHumidity();
               request->send(200, "text/plain", String(hum)); });
+
+  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
   server.begin();
 }
