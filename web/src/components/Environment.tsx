@@ -17,8 +17,8 @@ export const Environment = () => {
 
     return (
         <div>
-            <h1>Temperature: {environment?.tmp}</h1>
-            <h1>Humidity: {environment?.hum}</h1>
+            <h1>Temperature: {environment?.tmp}&deg;C</h1>
+            <h1>Humidity: {environment?.hum}%</h1>
         </div>
     )
 }
