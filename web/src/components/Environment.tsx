@@ -10,7 +10,7 @@ export const Environment = () => {
     const [environment, setEnvironment] = useState<Environment>();
 
     useEffect(() => {
-        fetch("/env").then((res) => res.json()).then((data) => {
+        fetch("/api/env").then((res) => res.json()).then((data) => {
             setEnvironment(data);
         })
     }, []);

@@ -2,9 +2,9 @@
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
 #include <ESPAsyncWebServer.h>
+#include <LittleFS.h>
 #include <M5StickC.h>
 #include <WiFi.h>
-#include <LittleFS.h>
 
 #include "DHT12.h"
 
@@ -17,6 +17,8 @@ const char *WIFI_SSID = STR(WIFI_SSID);
 const char *WIFI_PASSWORD = STR(WIFI_PASSWORD);
 
 AsyncWebServer server(80);
+
+void setupApi();
 
 void setup()
 {
@@ -55,17 +57,30 @@ void setup()
     return;
   }
 
-  server.on("/tmp", HTTP_GET, [](AsyncWebServerRequest *request)
+  setupApi();
+
+  server.serveStatic("/", LittleFS, "/www").setDefaultFile("index.html");
+
+  server.begin();
+}
+
+void loop()
+{
+}
+
+void setupApi()
+{
+  server.on("/api/tmp", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               float tmp = dht12.readTemperature();
               request->send(200, "text/plain", String(tmp)); });
 
-  server.on("/hum", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/api/hum", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               float hum = dht12.readHumidity();
               request->send(200, "text/plain", String(hum)); });
 
-  server.on("/env", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/api/env", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               float tmp = dht12.readTemperature();
               float hum = dht12.readHumidity();
@@ -79,12 +94,4 @@ void setup()
               serializeJson(doc, *response);
 
               request->send(response); });
-
-  server.serveStatic("/", LittleFS, "/www").setDefaultFile("index.html");
-
-  server.begin();
-}
-
-void loop()
-{
 }
