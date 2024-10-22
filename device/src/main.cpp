@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <AsyncJson.h>
 #include <ESPAsyncWebServer.h>
 #include <M5StickC.h>
 #include <WiFi.h>
@@ -63,7 +65,22 @@ void setup()
               float hum = dht12.readHumidity();
               request->send(200, "text/plain", String(hum)); });
 
-  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+  server.on("/env", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              float tmp = dht12.readTemperature();
+              float hum = dht12.readHumidity();
+
+              AsyncResponseStream *response = request->beginResponseStream("application/json");
+
+              JsonDocument doc;
+              doc["tmp"] = tmp;
+              doc["hum"] = hum;
+
+              serializeJson(doc, *response);
+
+              request->send(response); });
+
+  server.serveStatic("/", LittleFS, "/www").setDefaultFile("index.html");
 
   server.begin();
 }
